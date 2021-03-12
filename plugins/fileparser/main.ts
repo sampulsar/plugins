@@ -4,7 +4,7 @@ import { dateToTimestamp, matchElement } from "./utils";
 import { findAndLoadSceneConfig } from "./config";
 
 module.exports = async (ctx: MySceneContext): Promise<SceneOutput> => {
-  const { args, scenePath, $logger, $path, $throw } = ctx;
+  const { args, scenePath, $formatMessage, $logger, $path, $throw } = ctx;
 
   if (!scenePath) $throw("Uh oh. You shouldn't use the plugin for this type of event");
 
@@ -106,7 +106,7 @@ module.exports = async (ctx: MySceneContext): Promise<SceneOutput> => {
   };
 
   if (args.dry === true) {
-    $logger.info(`dry mode. Would have returned: ${sceneOutput}`);
+    $logger.info(`dry mode. Would have returned: ${$formatMessage(sceneOutput)}`);
     return {};
   } else {
     if (Object.keys(sceneOutput).length) {

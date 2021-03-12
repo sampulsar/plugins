@@ -29,7 +29,7 @@ export namespace EntityResult {
 export namespace ActorResult {
   export interface Actor {
     id: number;
-		name: string;
+    name: string;
     gender?: string;
     aliasFor?: string;
     dateOfBirth?: string;

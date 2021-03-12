@@ -52,7 +52,7 @@ export namespace ActorResult {
     piercings?: string;
     ethnicity?: string;
     age?: number;
-    avatar?: { id: string; path?: string; };
+    avatar?: { id: string; path?: string };
   }
 
   export interface Result {
@@ -61,7 +61,6 @@ export namespace ActorResult {
     actor: Actor;
     actors: Actor[];
   }
-
 }
 
 export namespace SceneResult {
@@ -77,7 +76,7 @@ export namespace SceneResult {
     entity: EntityResult.Entity;
     actors: ActorResult.Actor[];
     tags: [{ name: string }];
-    poster: { path: string; };
+    poster: { path: string };
   }
 
   export interface Result {

@@ -34,7 +34,7 @@ export namespace ActorResult {
     aliasFor?: string;
     dateOfBirth?: string;
     birthCountry?: string;
-    placeOfBirth?: { country: { name: string, alias: string } }, 
+    placeOfBirth?: { country: { name: string; alias: string } }, 
     alias?: string[];
     dateOfDeath?: string;
     cup?: string;

@@ -55,11 +55,16 @@ export namespace ActorResult {
     avatar?: { id: string; path?: string };
   }
 
+  export interface SearchResult {
+    // Actor always exists for successful http requests
+    // ex: null when 404
+    actors: Actor[];
+  }
+  
   export interface Result {
-    // Entity always exists for successful http requests
+    // Actor always exists for successful http requests
     // ex: null when 404
     actor: Actor;
-    actors: Actor[];
   }
 }
 
@@ -75,15 +80,20 @@ export namespace SceneResult {
     description: string | null;
     entity: EntityResult.Entity;
     actors: ActorResult.Actor[];
-    tags: [{ name: string }];
+    tags: { name: string }[];
     poster: { path: string };
   }
 
+  export interface SearchResult {
+    // Scenes always exists for successful http requests
+    // ex: null when 404
+    scenes: Scene[];
+  }
+  
   export interface Result {
-    // Entity always exists for successful http requests
+    // Scene always exists for successful http requests
     // ex: null when 404
     scene: Scene;
-    scenes: Scene[];
   }
 }
 
@@ -115,8 +125,8 @@ export class Api {
   /**
    * @param query - query to find the scene
    */
-  public async getActors(query: string): Promise<AxiosResponse<ActorResult.Result>> {
-    return this.axios.get<ActorResult.Result>(`/actors?limit=3&q=${query}`);
+  public async getActors(query: string): Promise<AxiosResponse<ActorResult.SearchResult>> {
+    return this.axios.get<ActorResult.SearchResult>(`/actors?limit=10&q=${query}`);
   }
 
   /**
@@ -129,8 +139,8 @@ export class Api {
   /**
    * @param query - query to find the scene
    */
-  public async getScenes(query: string): Promise<AxiosResponse<SceneResult.Result>> {
-    return this.axios.get<SceneResult.Result>(`/scenes?limit=2&q=${query}`);
+  public async getScenes(query: string): Promise<AxiosResponse<SceneResult.SearchResult>> {
+    return this.axios.get<SceneResult.SearchResult>(`/scenes?limit=10&q=${query}`);
   }
 
   /**

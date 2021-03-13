@@ -60,7 +60,7 @@ export namespace ActorResult {
     // ex: null when 404
     actors: Actor[];
   }
-  
+
   export interface Result {
     // Actor always exists for successful http requests
     // ex: null when 404
@@ -89,7 +89,7 @@ export namespace SceneResult {
     // ex: null when 404
     scenes: Scene[];
   }
-  
+
   export interface Result {
     // Scene always exists for successful http requests
     // ex: null when 404

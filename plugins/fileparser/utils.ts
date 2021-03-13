@@ -1,5 +1,5 @@
 import { Context } from "../../types/plugin";
-import { IFileParserConfigElem, IReplacementCharacter, MySceneContext } from "./types";
+import { IFileParserConfigElem, MySceneContext } from "./types";
 
 // Parses the input to find a date. The date separator can be ".", " ", "-", "_" or "/".
 export const dateToTimestamp = (ctx: Context, textToParse: string): number | undefined => {
@@ -119,26 +119,14 @@ export function matchElement(
       $logger.debug(`Using group(s) ${groupsToUse}: ${JSON.stringify(groups)}`);
     }
 
-    matchedResult.push(
-      ...getSplitResults(groups.join(" "), matcher.splitter, matcher.characterReplacement)
-    );
+    matchedResult.push(...getSplitResults(groups.join(" "), matcher.splitter));
   });
 
   $logger.debug(`Final matched result: "${JSON.stringify(matchedResult)}"`);
   return matchedResult;
 }
 
-function getSplitResults(
-  text: string,
-  splitter: string | undefined,
-  replacement?: IReplacementCharacter[]
-): string[] {
-  if (replacement) {
-    replacement.forEach((e) => {
-      text = text.replace(e.original, e.replacement);
-    });
-  }
-
+function getSplitResults(text: string, splitter: string | undefined): string[] {
   if (splitter && splitter !== "") {
     return text.split(splitter).map((s) => s.trim());
   } else {

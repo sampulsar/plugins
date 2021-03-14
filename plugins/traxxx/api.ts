@@ -1,5 +1,6 @@
 import { AxiosResponse, AxiosInstance, AxiosError } from "axios";
 import { Context } from "../../types/plugin";
+import { MyActorArgs, MySceneArgs, MyStudioArgs } from "./types";
 
 export namespace EntityResult {
   export interface Entity {
@@ -34,7 +35,7 @@ export namespace ActorResult {
     aliasFor?: string;
     dateOfBirth?: string;
     birthCountry?: string;
-    placeOfBirth?: { country: { name: string; alias: string } }, 
+    placeOfBirth?: { country: { name: string } };
     alias?: string[];
     dateOfDeath?: string;
     cup?: string;
@@ -100,11 +101,17 @@ export namespace SceneResult {
 export class Api {
   ctx: Context;
   axios: AxiosInstance;
+  apiURL: string;
+  limit: number;
 
   constructor(ctx: Context) {
     this.ctx = ctx;
+    const args = ctx.args as MyActorArgs | MySceneArgs | MyStudioArgs;
+    this.apiURL = args?.server?.URL || "https://traxxx.me";
+    this.limit = args?.server?.limit || 100;
+
     this.axios = ctx.$axios.create({
-      baseURL: "https://traxxx.me/api",
+      baseURL: `${this.apiURL}/api`,
     });
   }
 
@@ -126,7 +133,7 @@ export class Api {
    * @param query - query to find the scene
    */
   public async getActors(query: string): Promise<AxiosResponse<ActorResult.SearchResult>> {
-    return this.axios.get<ActorResult.SearchResult>(`/actors?limit=10&q=${query}`);
+    return this.axios.get<ActorResult.SearchResult>(`/actors?limit=${this.limit}&q=${query}`);
   }
 
   /**
@@ -140,7 +147,7 @@ export class Api {
    * @param query - query to find the scene
    */
   public async getScenes(query: string): Promise<AxiosResponse<SceneResult.SearchResult>> {
-    return this.axios.get<SceneResult.SearchResult>(`/scenes?limit=10&q=${query}`);
+    return this.axios.get<SceneResult.SearchResult>(`/scenes?limit=${this.limit}&q=${query}`);
   }
 
   /**
@@ -202,13 +209,14 @@ export class Api {
 }
 
 export const buildImageUrls = (
-  entity: EntityResult.Entity
+  entity: EntityResult.Entity,
+  args: MyStudioArgs
 ): {
   logo: string | undefined;
   thumbnail: string | undefined;
   favicon: string | undefined;
 } => {
-  const baseUrl = "https://traxxx.me/img/logos/";
+  const baseUrl = `${args?.server?.URL || "https://traxxx.me"}/img/logos/`;
 
   return {
     logo: entity.logo ? `${baseUrl}${entity.logo}` : undefined,

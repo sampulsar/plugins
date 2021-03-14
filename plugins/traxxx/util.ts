@@ -3,6 +3,7 @@ import {
   MyStudioArgs,
   MyStudioContext,
   MyValidatedStudioContext,
+  MyValidatedSceneContext,
   StudioSettings,
 } from "./types";
 
@@ -157,13 +158,6 @@ export const stripAccents = (str: string): string =>
  * @param str - the studio name
  * @returns the slugified version of the name for traxxx
  */
-export const slugify = (str: string): string => {
-  // Newline for every operation for readability
-  let res = str.replace(/\s/g, "");
-  res = stripAccents(res);
-  res = lowercase(res);
-  return res;
-};
 
 export const isBlacklisted = (ctx: MyValidatedStudioContext, prop: string): boolean => {
   if (ctx.args.studios.whitelist.length) {
@@ -220,3 +214,135 @@ export const isOverrideBlacklisted = (ctx: MyValidatedStudioContext, prop: strin
 export const suppressProp = (ctx: MyValidatedStudioContext, prop: string): boolean => {
   return isBlacklisted(ctx, prop) || isOverrideBlacklisted(ctx, prop);
 };
+
+/**
+ * @param timestamp - Timestamp to be converted to date
+ * @returns a human friendly date string in YYYY-MM-DD
+ */
+export function timestampToString(timestamp: number | null) {
+  if (timestamp === null) return "";
+
+  const dateNotFormatted = new Date(timestamp);
+
+  let formattedString = `${dateNotFormatted.getFullYear()}-`;
+
+  if (dateNotFormatted.getMonth() < 9) {
+    formattedString += "0";
+  }
+
+  formattedString += dateNotFormatted.getMonth() + 1;
+
+  formattedString += "-";
+
+  if (dateNotFormatted.getDate() < 10) {
+    formattedString += "0";
+  }
+  formattedString += dateNotFormatted.getDate();
+
+  return formattedString;
+}
+
+export const dateToTimestamp = (ctx: MyValidatedSceneContext, dateStr: string): number | null => {
+  const ddmmyyyy = dateStr.match(/\d\d(?:\s|\.)\d\d(?:\s|\.)\d\d\d\d/);
+  const yyyymmdd = dateStr.match(/\d\d\d\d(?:\s|\.)\d\d(?:\s|\.)\d\d/);
+  const yymmdd = dateStr.match(/\d\d(?:\s|\.)\d\d(?:\s|\.)\d\d/);
+
+  ctx.$logger.verbose(`Converting date ${JSON.stringify(dateStr)} to timestamp`);
+
+  if (yyyymmdd && yyyymmdd.length) {
+    const date = yyyymmdd[0].replace(" ", ".");
+
+    ctx.$logger.verbose("\tSUCCESS: Found => yyyymmdd");
+
+    return ctx.$moment(date, "YYYY-MM-DD").valueOf();
+  }
+  if (ddmmyyyy && ddmmyyyy.length) {
+    const date = ddmmyyyy[0].replace(" ", ".");
+
+    ctx.$logger.verbose("\tSUCCESS: Found => ddmmyyyy");
+
+    return ctx.$moment(date, "DD-MM-YYYY").valueOf();
+  }
+  if (yymmdd && yymmdd.length) {
+    const date = yymmdd[0].replace(" ", ".");
+
+    ctx.$logger.verbose("\tSUCCESS: Found => yymmdd");
+
+    return ctx.$moment(date, "YY-MM-DD").valueOf();
+  }
+
+  ctx.$logger.verbose("\tFAILED: Could not find a date");
+  return null;
+};
+
+const substitutes = {
+  à: "a",
+  á: "a",
+  ä: "a",
+  å: "a",
+  ã: "a",
+  æ: "ae",
+  ç: "c",
+  è: "e",
+  é: "e",
+  ë: "e",
+  ẽ: "e",
+  ì: "i",
+  í: "i",
+  ï: "i",
+  ĩ: "i",
+  ǹ: "n",
+  ń: "n",
+  ñ: "n",
+  ò: "o",
+  ó: "o",
+  ö: "o",
+  õ: "o",
+  ø: "o",
+  œ: "oe",
+  ß: "ss",
+  ù: "u",
+  ú: "u",
+  ü: "u",
+  ũ: "u",
+  ỳ: "y",
+  ý: "y",
+  ÿ: "y",
+  ỹ: "y",
+};
+
+export function slugify(
+  string: string,
+  delimiter = "",
+  { encode = false, removeAccents = true, removePunctuation = false, limit = 1000 } = {}
+): string {
+  if (!string || typeof string !== "string") {
+    return string;
+  }
+
+  const slugComponents = string
+    .trim()
+    .toLowerCase()
+    .replace(removePunctuation ? /[.,:;'"]/g : "", "")
+    .match(/[A-Za-zÀ-ÖØ-öø-ÿ0-9]+/g);
+
+  if (!slugComponents) {
+    return "";
+  }
+
+  const slug = slugComponents.reduce((acc, component, index) => {
+    const accSlug = `${acc}${index > 0 ? delimiter : ""}${component}`;
+
+    if (accSlug.length < limit) {
+      if (removeAccents) {
+        return accSlug.replace(/[à-ÿ]/g, (match) => substitutes[match] || "");
+      }
+
+      return accSlug;
+    }
+
+    return acc;
+  }, "");
+
+  return encode ? encodeURI(slug) : slug;
+}

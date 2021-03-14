@@ -129,7 +129,7 @@ export class ChannelExtractor {
       return {};
     }
 
-    const { logo } = buildImageUrls(entity);
+    const { logo } = buildImageUrls(entity, this.ctx.args);
 
     if (!logo) {
       return {};

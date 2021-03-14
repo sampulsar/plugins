@@ -73,7 +73,13 @@ We can use two regex:
   },
   "nameMatcher": {
     "regex": "(.+?)(?: ~ |$)",
-    "matchesToUse": [3]
+    "matchesToUse": [3],
+    "characterReplacement": [
+    {
+      "original": "_",
+      "replacement": " "
+    }
+]
   },
   "actorsMatcher": {
     "regex": "(.+?)(?: ~ |$)",
@@ -87,6 +93,17 @@ We can use two regex:
 }
 ```
 
+For instance, if you want to replace all underscores by spaces, you can use (in JSON format):
+
+```json
+"characterReplacement": [
+  {
+    "original": "_",
+    "replacement": " "
+  }
+]
+```
+
 `parserconfig.yaml` (remember: to be placed in your library)
 ```yaml
 ---
@@ -98,6 +115,9 @@ nameMatcher:
   regex: "(.+?)(?: ~ |$)"
   matchesToUse:
   - 3
+  characterReplacement:
+  - original: "_"
+    replacement: " "
 actorsMatcher:
   regex: "(.+?)(?: ~ |$)"
   matchesToUse:

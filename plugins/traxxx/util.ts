@@ -156,8 +156,17 @@ export const stripAccents = (str: string): string =>
 
 /**
  * @param str - the studio name
+ * @param removePunctuation - Optional: Remove punctuation
  * @returns the slugified version of the name for traxxx
  */
+export const slugify = (str: string, removePunctuation = false): string => {
+  // Newline for every operation for readability
+  let res = str.replace(/\s/g, "");
+  res = stripAccents(res);
+  res = lowercase(res);
+  res = res.replace(removePunctuation ? /[.,:;'"]/g : "", "");
+  return res;
+};
 
 export const isBlacklisted = (ctx: MyValidatedStudioContext, prop: string): boolean => {
   if (ctx.args.studios.whitelist.length) {
@@ -274,75 +283,3 @@ export const dateToTimestamp = (ctx: MyValidatedSceneContext, dateStr: string): 
   ctx.$logger.verbose("\tFAILED: Could not find a date");
   return null;
 };
-
-const substitutes = {
-  à: "a",
-  á: "a",
-  ä: "a",
-  å: "a",
-  ã: "a",
-  æ: "ae",
-  ç: "c",
-  è: "e",
-  é: "e",
-  ë: "e",
-  ẽ: "e",
-  ì: "i",
-  í: "i",
-  ï: "i",
-  ĩ: "i",
-  ǹ: "n",
-  ń: "n",
-  ñ: "n",
-  ò: "o",
-  ó: "o",
-  ö: "o",
-  õ: "o",
-  ø: "o",
-  œ: "oe",
-  ß: "ss",
-  ù: "u",
-  ú: "u",
-  ü: "u",
-  ũ: "u",
-  ỳ: "y",
-  ý: "y",
-  ÿ: "y",
-  ỹ: "y",
-};
-
-export function slugify(
-  string: string,
-  delimiter = "",
-  { encode = false, removeAccents = true, removePunctuation = false, limit = 1000 } = {}
-): string {
-  if (!string || typeof string !== "string") {
-    return string;
-  }
-
-  const slugComponents = string
-    .trim()
-    .toLowerCase()
-    .replace(removePunctuation ? /[.,:;'"]/g : "", "")
-    .match(/[A-Za-zÀ-ÖØ-öø-ÿ0-9]+/g);
-
-  if (!slugComponents) {
-    return "";
-  }
-
-  const slug = slugComponents.reduce((acc, component, index) => {
-    const accSlug = `${acc}${index > 0 ? delimiter : ""}${component}`;
-
-    if (accSlug.length < limit) {
-      if (removeAccents) {
-        return accSlug.replace(/[à-ÿ]/g, (match) => substitutes[match] || "");
-      }
-
-      return accSlug;
-    }
-
-    return acc;
-  }, "");
-
-  return encode ? encodeURI(slug) : slug;
-}

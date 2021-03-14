@@ -220,8 +220,8 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
       $logger.debug(`Testing "${date}" with "${resultDate}"`);
 
       // Test the title
-      const resultName = slugify(result.title, "", { removePunctuation: true });
-      const name = slugify(scene.name, "", { removePunctuation: true });
+      const resultName = slugify(result.title, true);
+      const name = slugify(scene.name, true);
 
       const found = levenshtein(name, resultName) as number;
       $logger.debug(`Testing "${name}" with "${resultName}" ${found}`);
@@ -240,14 +240,12 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
         .filter(Boolean)
         .join(" ");
 
-      if (date === resultDate && name === slugify(actors, "", { removePunctuation: true })) {
+      if (date === resultDate && name === slugify(actors, true)) {
         sceneHighScore = 0;
         sceneId = result.id;
       }
 
-      const resultNameWithActors = slugify(`${actors} ${result?.title}`, "", {
-        removePunctuation: true,
-      });
+      const resultNameWithActors = slugify(`${actors} ${result?.title}`, true);
 
       const found2 = levenshtein(name, resultNameWithActors) as number;
 
@@ -258,7 +256,7 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
       }
 
       // Test title contains actors and names
-      const nameWithActors = slugify(`${actors} ${scene.name}`, "", { removePunctuation: true });
+      const nameWithActors = slugify(`${actors} ${scene.name}`, true);
 
       const found3 = levenshtein(nameWithActors, resultName) as number;
 

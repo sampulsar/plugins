@@ -56,9 +56,40 @@ We can use two regex:
   - Get the list of actors: second match, further split into individual actor by using a `","` splitter on the match.
 - `(?![\\s\\S]*\/)(.*)$` that matches everything from the last separator to the end of the string. By setting `scopeDirname: true`, the pattern is applied on the full path, which is perfect to get the movie name (that in our example is always the deepest directory in the path). 
 
+For instance, if you want to replace all fullstops by spaces, you can use (in JSON format):
+
+```json
+"characterReplacement": [
+  {
+    "original": "\\.",
+    "replacement": " "
+  }
+]
+```
+
+The replace accepts regex is uses so you can insert spaces based on a pattern, you can use (in YAML format): 
+
+```yaml
+characterReplacement:
+- original: "([a-z])([A-Z])"
+    replacement: "$1 $2"
+  - original: "([a-z])([0-9])"
+    replacement: "$1 $2"
+  - original: "([0-9])([a-z])"
+    replacement: "$1 $2"
+  - original: "([A-Z])([A-Z])([a-z])"
+    replacement: "$1 $2$3"
+```
+
 `parserconfig.json` (remember: to be placed in your library)
 ```json
 {
+  "characterReplacement": [
+    {
+      "original": "\\.",
+      "replacement": " "
+    }
+  ],
   "studioMatcher": {
     "regex": "(.+?)(?: ~ |$)",
     "matchesToUse": [1]
@@ -82,6 +113,9 @@ We can use two regex:
 `parserconfig.yaml` (remember: to be placed in your library)
 ```yaml
 ---
+characterReplacement:
+  - original: "\\."
+    replacement: " "
 studioMatcher:
   regex: "(.+?)(?: ~ |$)"
   matchesToUse:

@@ -80,18 +80,20 @@ export function isValidConfig(
   let generalError: Error | null = null;
   const location: string = "root";
 
+  const fileReplaceSchemaElem = $zod
+    .array($zod.object({ original: $zod.string(), replacement: $zod.string() }))
+    .optional();
+
   const fileParserSchemaElem = $zod.object({
     scopeDirname: $zod.boolean().optional(),
     regex: $zod.string(),
     matchesToUse: $zod.array($zod.number()).optional(),
     groupsToUse: $zod.array($zod.number()).optional(),
     splitter: $zod.string().optional(),
-    characterReplacement: $zod
-      .array($zod.object({ original: $zod.string(), replacement: $zod.string() }))
-      .optional(),
   });
 
   const configSchema = $zod.object({
+    characterReplacement: fileReplaceSchemaElem.optional(),
     studioMatcher: fileParserSchemaElem.optional(),
     nameMatcher: fileParserSchemaElem.optional(),
     actorsMatcher: fileParserSchemaElem.optional(),

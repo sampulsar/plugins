@@ -18,10 +18,10 @@ export type IFileParserConfigElem = {
   matchesToUse?: number[];
   groupsToUse?: number[];
   splitter?: string;
-  characterReplacement?: IReplacementCharacter[];
 };
 
 export type IFileParserConfig = {
+  characterReplacement?: IReplacementCharacter[];
   studioMatcher?: IFileParserConfigElem;
   nameMatcher?: IFileParserConfigElem;
   actorsMatcher?: IFileParserConfigElem;

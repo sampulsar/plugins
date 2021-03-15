@@ -79,7 +79,8 @@ export const dateToTimestamp = (ctx: Context, textToParse: string): number | und
 
 export function matchElement(
   ctx: MySceneContext,
-  matcher: IFileParserConfigElem
+  matcher: IFileParserConfigElem,
+  characterReplacement?: IReplacementCharacter[]
 ): string[] | undefined {
   const { $logger, $path, scenePath } = ctx;
 
@@ -120,7 +121,7 @@ export function matchElement(
     }
 
     matchedResult.push(
-      ...getSplitResults(groups.join(" "), matcher.splitter, matcher.characterReplacement)
+      ...getSplitResults(groups.join(" "), matcher.splitter, characterReplacement)
     );
   });
 

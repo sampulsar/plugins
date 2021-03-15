@@ -86,12 +86,9 @@ export function isValidConfig(
     matchesToUse: $zod.array($zod.number()).optional(),
     groupsToUse: $zod.array($zod.number()).optional(),
     splitter: $zod.string().optional(),
-    characterReplacement: $zod.array(
-      $zod.object({
-        original: $zod.string(),
-        replacement: $zod.string(),
-      })
-    ).optional(),
+    characterReplacement: $zod
+      .array($zod.object({ original: $zod.string(), replacement: $zod.string() }))
+      .optional(),
   });
 
   const configSchema = $zod.object({

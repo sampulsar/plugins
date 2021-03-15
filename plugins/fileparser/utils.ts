@@ -135,7 +135,7 @@ function getSplitResults(
 ): string[] {
   if (replacement) {
     replacement.forEach((e) => {
-      text = text.replace(e.original, e.replacement);
+      text = text.replace(new RegExp(e.original, "g"), e.replacement);
     });
   }
 

@@ -4,6 +4,12 @@ import { MySceneContext, MyValidatedSceneContext } from "./types";
 import { dateToTimestamp, timestampToString, slugify } from "./util";
 import levenshtein from "./levenshtein";
 
+enum ThreeState {
+  TRUE,
+  FALSE,
+  TRALSE,
+}
+
 export class SceneExtractor {
   ctx: MyValidatedSceneContext;
   scene?: SceneResult.Scene;
@@ -178,7 +184,15 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
   const initialQuery = queries.flat().filter(Boolean).join(" ");
 
   $logger.info(initialQuery);
-  const scenes = (await api.getScenes(initialQuery)).data.scenes;
+  const searchPromise = api
+    .getScenes(initialQuery)
+    .then((res) => res?.data?.scenes)
+    .catch((err) => {
+      ctx.$throw(err);
+      return undefined;
+    });
+
+  const scenes = await searchPromise;
 
   if (!scenes || scenes.length === 0) {
     $logger.info(`Could not find scene "${sceneName}" in TRAXXX`);
@@ -189,81 +203,78 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
   let sceneId;
   $logger.info(`Found ${scenes.length} scenes "${initialQuery}" in TRAXXX`);
   scenes.forEach((result) => {
-    let match = true;
+    if (!result) return;
+
+    let matchstudio = ThreeState.TRUE;
     // The studio needs to match what is passed.
-    if (scene.studio && args.scenes.matchStudio) {
-      match = slugify(result?.entity?.name) === slugify(scene.studio);
-      $logger.info(`Match Studio "${result?.entity?.name}" with "${scene.studio}"`);
-    }
-
-    if (match && args.scenes.matchActors && passThroughSceneInfo?.actors) {
-      // eslint-disable-next-line dot-notation
-      const actorsArray = passThroughSceneInfo.actors;
-
-      const resultActors = result.actors.map((actor) => {
-        return actor.name;
-      });
-
-      $logger.info(
-        `Testing "${$formatMessage(actorsArray)}" with "${$formatMessage(resultActors)}"`
-      );
-      actorsArray?.forEach((actorName) => {
-        if (!resultActors.includes(actorName)) {
-          match = false;
-        }
-      });
-    }
-    $logger.info(`Match "${match}"`);
-    if (match) {
-      const resultDate = result?.date.split("T")[0];
-      const date = timestampToString(scene.releaseDate);
-      $logger.debug(`Testing "${date}" with "${resultDate}"`);
-
-      // Test the title
-      const resultName = slugify(result.title, true);
-      const name = slugify(scene.name, true);
-
-      const found = levenshtein(name, resultName) as number;
-      $logger.debug(`Testing "${name}" with "${resultName}" ${found}`);
-
-      if (found < sceneHighScore) {
-        sceneHighScore = found;
-        sceneId = result.id;
+    if (args.scenes?.matchStudio) {
+      if (passThroughSceneInfo.studio) {
+        matchstudio =
+          slugify(result.entity.name) === slugify(passThroughSceneInfo.studio)
+            ? ThreeState.TRUE
+            : ThreeState.FALSE;
+        $logger.debug(
+          `Match Studio "${result?.entity?.name}" with "${passThroughSceneInfo.studio}"`
+        );
+      } else {
+        // Nothing to validate
+        matchstudio = ThreeState.TRALSE;
       }
+    }
 
-      // Test the just contains the actors name
-      const actors = result?.actors
-        ?.map((actor) => {
-          if (actor.gender !== "female") return "";
-          return actor.name;
-        })
-        .filter(Boolean)
-        .join(" ");
+    let matchactors = ThreeState.TRUE; // If match enable and no passThroughSceneInfo.actors it will be null.
+    if (args.scenes?.matchActors) {
+      if (passThroughSceneInfo.actors) {
+        const actorsArray = passThroughSceneInfo.actors;
 
-      if (date === resultDate && name === slugify(actors, true)) {
+        const resultActors = result.actors.map((actor) => {
+          return actor.name || "";
+        });
+
+        $logger.info(
+          `Testing "${$formatMessage(actorsArray)}" with "${$formatMessage(resultActors)}"`
+        );
+        actorsArray.forEach((actorName) => {
+          if (!resultActors.includes(actorName)) {
+            matchactors = ThreeState.FALSE;
+          }
+        });
+      } else {
+        matchactors = ThreeState.TRALSE;
+      }
+    }
+
+    const resultDate = result?.date.split("T")[0];
+    const date = timestampToString(scene.releaseDate);
+    $logger.debug(`Testing "${date}" with "${resultDate}"`);
+
+    // Test the title
+    const resultName = slugify(result.title, true);
+    const name = slugify(scene.name, true);
+
+    const found = levenshtein(name, resultName) as number;
+    $logger.debug(`Testing "${name}" with "${resultName}" ${found}`);
+
+    if (
+      found < sceneHighScore &&
+      matchstudio !== ThreeState.FALSE &&
+      (matchactors === ThreeState.TRALSE || matchactors === ThreeState.TRUE)
+    ) {
+      sceneHighScore = found;
+      sceneId = result.id;
+    }
+
+    if (date === resultDate) {
+      $logger.info(`Date match "${name}" with "${resultName}"`);
+      $logger.info(`matchstudio "${matchstudio}"`);
+      $logger.info(`matchactors "${matchactors}"`);
+      if (
+        matchstudio !== ThreeState.FALSE &&
+        (matchactors === ThreeState.TRALSE || matchactors === ThreeState.TRUE)
+      ) {
         sceneHighScore = 0;
         sceneId = result.id;
-      }
-
-      const resultNameWithActors = slugify(`${actors} ${result?.title}`, true);
-
-      const found2 = levenshtein(name, resultNameWithActors) as number;
-
-      if (found2 < sceneHighScore) {
-        $logger.debug(`Testing "${name}" with "${resultNameWithActors}" ${found2}`);
-        sceneHighScore = found2;
-        sceneId = result.id;
-      }
-
-      // Test title contains actors and names
-      const nameWithActors = slugify(`${actors} ${scene.name}`, true);
-
-      const found3 = levenshtein(nameWithActors, resultName) as number;
-
-      if (found3 < sceneHighScore) {
-        $logger.debug(`Testing "${nameWithActors}" with "${resultName}" ${found3}`);
-        sceneHighScore = found3;
-        sceneId = result.id;
+        $logger.info(`Date match "${name}" with "${resultName}"`);
       }
     }
   });

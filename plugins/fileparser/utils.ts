@@ -120,26 +120,20 @@ export function matchElement(
       $logger.debug(`Using group(s) ${groupsToUse}: ${JSON.stringify(groups)}`);
     }
 
-    matchedResult.push(
-      ...getSplitResults(groups.join(" "), matcher.splitter, characterReplacement)
-    );
+    let text: string = groups.join(" ");
+    if (characterReplacement) {
+      characterReplacement.forEach((e) => {
+        text = text.replace(new RegExp(e.original, "g"), e.replacement);
+      });
+    }
+    matchedResult.push(...getSplitResults(text, matcher.splitter));
   });
 
   $logger.debug(`Final matched result: "${JSON.stringify(matchedResult)}"`);
   return matchedResult;
 }
 
-function getSplitResults(
-  text: string,
-  splitter: string | undefined,
-  replacement?: IReplacementCharacter[]
-): string[] {
-  if (replacement) {
-    replacement.forEach((e) => {
-      text = text.replace(new RegExp(e.original, "g"), e.replacement);
-    });
-  }
-
+function getSplitResults(text: string, splitter: string | undefined): string[] {
   if (splitter && splitter !== "") {
     return text.split(splitter).map((s) => s.trim());
   } else {

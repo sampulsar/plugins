@@ -93,6 +93,8 @@ We can use two regex:
 }
 ```
 
+There is a character replacement that can clean up any matched components. This process is done after the matching has happened.
+
 For instance, if you want to replace all fullstops by spaces, you can use (in JSON format):
 
 ```json
@@ -104,18 +106,27 @@ For instance, if you want to replace all fullstops by spaces, you can use (in JS
 ]
 ```
 
-The replace accepts regex is uses so you can insert spaces based on a pattern, you can use (in YAML format): 
+The replace accepts regex is uses so you can insert spaces based on a pattern, you can use (in JSON format): 
 
-```yaml
-characterReplacement:
-- original: "([a-z])([A-Z])"
-    replacement: "$1 $2"
-  - original: "([a-z])([0-9])"
-    replacement: "$1 $2"
-  - original: "([0-9])([a-z])"
-    replacement: "$1 $2"
-  - original: "([A-Z])([A-Z])([a-z])"
-    replacement: "$1 $2$3"
+```json
+"characterReplacement": [
+  {
+    "original": "([a-z])([A-Z])",
+    "replacement": "$1 $2"
+  },
+  {
+    "original": "([a-z])([0-9])",
+    "replacement": "$1 $2"
+  },
+  {
+    "original": "([0-9])([a-z])",
+    "replacement": "$1 $2"
+  },
+  {
+    "original": "([A-Z])([A-Z])([a-z])",
+    "replacement": "$1 $2$3"
+  }
+]  
 ```
 
 `parserconfig.yaml` (remember: to be placed in your library)

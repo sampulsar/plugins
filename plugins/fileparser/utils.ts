@@ -126,6 +126,7 @@ export function matchElement(
         text = text.replace(new RegExp(e.original, "g"), e.replacement);
       });
     }
+
     matchedResult.push(...getSplitResults(text, matcher.splitter));
   });
 

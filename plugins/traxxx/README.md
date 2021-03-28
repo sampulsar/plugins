@@ -2,6 +2,8 @@
 
 by leadwolf
 
+[Download here](https://raw.githubusercontent.com/porn-vault/plugins/master/dist/traxxx.js)
+
 Scrape data from traxxx
 
 ### Documentation
@@ -57,13 +59,14 @@ Example: plugin `A` returns `custom.myField: 'a string'`. and plugin `B` *would*
 ### Example installation with default arguments
 
 `config.json`
+
 ```json
 ---
 {
   "plugins": {
     "register": {
       "traxxx": {
-        "path": "./plugins/traxxx/main.ts",
+        "path": "./plugins/traxxx.js",
         "args": {
           "dry": false,
           "studios": {
@@ -94,12 +97,13 @@ Example: plugin `A` returns `custom.myField: 'a string'`. and plugin `B` *would*
 ```
 
 `config.yaml`
+
 ```yaml
 ---
 plugins:
   register:
     traxxx:
-      path: ./plugins/traxxx/main.ts
+      path: ./plugins/traxxx.js
       args:
         dry: false
         studios:
@@ -119,4 +123,5 @@ plugins:
       - traxxx
 
 ---
+
 ```

@@ -1,6 +1,8 @@
-## adultempire 0.4.1
+## adultempire 0.4.2
 
 by boi123212321
+
+[Download here](https://raw.githubusercontent.com/porn-vault/plugins/master/dist/adultempire.js)
 
 Scrape data from adultempire
 
@@ -13,13 +15,14 @@ Scrape data from adultempire
 ### Example installation with default arguments
 
 `config.json`
+
 ```json
 ---
 {
   "plugins": {
     "register": {
       "adultempire": {
-        "path": "./plugins/adultempire/main.ts",
+        "path": "./plugins/adultempire.js",
         "args": {
           "dry": false
         }
@@ -39,12 +42,13 @@ Scrape data from adultempire
 ```
 
 `config.yaml`
+
 ```yaml
 ---
 plugins:
   register:
     adultempire:
-      path: ./plugins/adultempire/main.ts
+      path: ./plugins/adultempire.js
       args:
         dry: false
   events:
@@ -54,4 +58,5 @@ plugins:
       - adultempire
 
 ---
+
 ```

@@ -2,6 +2,8 @@
 
 by boi123212321, john4valor, leadwolf
 
+[Download here](https://raw.githubusercontent.com/porn-vault/plugins/master/dist/pics.js)
+
 Find actor, scene, movie, studio images based on local files. GIF support.
 
 ### Documentation
@@ -112,13 +114,14 @@ Example with multiple configurations:
 ### Example installation with default arguments
 
 `config.json`
+
 ```json
 ---
 {
   "plugins": {
     "register": {
       "pics": {
-        "path": "./plugins/pics/main.ts",
+        "path": "./plugins/pics.js",
         "args": {
           "dry": false,
           "actors": [
@@ -200,12 +203,13 @@ Example with multiple configurations:
 ```
 
 `config.yaml`
+
 ```yaml
 ---
 plugins:
   register:
     pics:
-      path: ./plugins/pics/main.ts
+      path: ./plugins/pics.js
       args:
         dry: false
         actors:
@@ -256,4 +260,5 @@ plugins:
       - pics
 
 ---
+
 ```

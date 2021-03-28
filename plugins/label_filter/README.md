@@ -2,6 +2,8 @@
 
 by boi123212321
 
+[Download here](https://raw.githubusercontent.com/porn-vault/plugins/master/dist/label_filter.js)
+
 Filter labels returned by other plugins
 
 ### Arguments
@@ -14,13 +16,14 @@ Filter labels returned by other plugins
 ### Example installation with default arguments
 
 `config.json`
+
 ```json
 ---
 {
   "plugins": {
     "register": {
       "label_filter": {
-        "path": "./plugins/label_filter/main.ts",
+        "path": "./plugins/label_filter.js",
         "args": {
           "whitelist": [],
           "blacklist": []
@@ -53,12 +56,13 @@ Filter labels returned by other plugins
 ```
 
 `config.yaml`
+
 ```yaml
 ---
 plugins:
   register:
     label_filter:
-      path: ./plugins/label_filter/main.ts
+      path: ./plugins/label_filter.js
       args:
         whitelist: []
         blacklist: []
@@ -77,4 +81,5 @@ plugins:
       - label_filter
 
 ---
+
 ```

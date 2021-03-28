@@ -312,6 +312,30 @@ var main = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
         const aliases = aliasName.split(/,\s*/g);
         return { aliases };
     }
+    function getCareer() {
+        if (isBlacklisted("career"))
+            return {};
+        $logger.verbose("Getting career information...");
+        const careerSel = $(".timeline-horizontal p.m-0");
+        if (!careerSel)
+            return {};
+        const career = {};
+        const careerStart = $(careerSel[0]).text();
+        if (careerStart && careerStart !== "Begin") {
+            career["started"] = Number.parseInt(careerStart, 10);
+            if (Number.isNaN(career["started"])) {
+                delete career["started"];
+            }
+        }
+        const careerEnd = $(careerSel[1]).text();
+        if (careerEnd && careerEnd !== "Now") {
+            career["ended"] = Number.parseInt(careerEnd, 10);
+            if (Number.isNaN(career["ended"])) {
+                delete career["ended"];
+            }
+        }
+        return career;
+    }
     function scrapeMeasurements() {
         const measurementParts = [];
         $('[data-test="p-measurements"] .text-underline-always').each(function (i, element) {
@@ -386,7 +410,7 @@ var main = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
         }
         return { piercings: piercingText };
     }
-    const custom = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, scrapeText("hair color", '[data-test="link_hair_color"] .text-underline-always')), scrapeText("eye color", '[data-test="link_eye_color"] .text-underline-always')), scrapeText("ethnicity", '[data-test="link_ethnicity"] .text-underline-always')), getHeight()), getWeight()), getMeasurements()), getWaistSize()), getHipSize()), getBraSize()), getBirthplace()), getZodiac()), getGender()), getTattoos()), getPiercings());
+    const custom = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, scrapeText("hair color", '[data-test="link_hair_color"] .text-underline-always')), scrapeText("eye color", '[data-test="link_eye_color"] .text-underline-always')), scrapeText("ethnicity", '[data-test="link_ethnicity"] .text-underline-always')), getHeight()), getWeight()), getMeasurements()), getWaistSize()), getHipSize()), getBraSize()), getBirthplace()), getZodiac()), getGender()), getTattoos()), getCareer()), getPiercings());
     if (custom.tattoos === "Unknown") {
         delete custom.tattoos;
     }

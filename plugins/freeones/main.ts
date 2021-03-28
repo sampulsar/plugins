@@ -290,7 +290,7 @@ module.exports = async (ctx: MyContext): Promise<ActorOutput> => {
         $logger.verbose("No birth province found, just city!");
         return { birthplace: cityName };
       } else {
-        const bplace = cityName + ", " + stateName.split("-")[0].trim();
+        const bplace = `${cityName}, ${stateName.split("-")[0].trim()}`;
         return { birthplace: bplace };
       }
     }
@@ -389,17 +389,17 @@ module.exports = async (ctx: MyContext): Promise<ActorOutput> => {
 
     const careerStart = $(careerSel[0]).text();
     if (careerStart && careerStart !== "Begin") {
-      career["started"] = Number.parseInt(careerStart, 10);
-      if (Number.isNaN(career["started"])) {
-        delete career["started"];
+      career.started = Number.parseInt(careerStart, 10);
+      if (Number.isNaN(career.started)) {
+        delete career.started;
       }
     }
 
     const careerEnd = $(careerSel[1]).text();
     if (careerEnd && careerEnd !== "Now") {
-      career["ended"] = Number.parseInt(careerEnd, 10);
-      if (Number.isNaN(career["ended"])) {
-        delete career["ended"];
+      career.ended = Number.parseInt(careerEnd, 10);
+      if (Number.isNaN(career.ended)) {
+        delete career.ended;
       }
     }
 

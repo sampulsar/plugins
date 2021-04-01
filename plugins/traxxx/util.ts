@@ -13,7 +13,6 @@ import {
   ServerSettings,
   StudioSettings,
 } from "./types";
-import moment = require("moment");
 
 export const hasProp = (target: unknown, prop: string): boolean => {
   return !!target && typeof target === "object" && Object.hasOwnProperty.call(target, prop);
@@ -52,7 +51,7 @@ const DEFAULT_STUDIO_SETTINGS: StudioSettings = {
  * @param ctx - plugin context
  * @returns the context with defaults args when missing, or throws
  */
-export const validateArgs = ({
+export const validateStudioArgs = ({
   args,
   $throw,
   $logger,
@@ -72,37 +71,11 @@ export const validateArgs = ({
     return $throw(`Missing args, cannot run plugin`);
   }
 
-  if (!validatedArgs.server || typeof validatedArgs.server !== "object") {
-    $logger.verbose(`Missing "args.server, setting to default: `, DEFAULT_SERVER_SETTINGS);
-    validatedArgs.server = DEFAULT_SERVER_SETTINGS;
-  } else {
-    // Copy object
-    validatedArgs.server = { ...validatedArgs.server };
-  }
-
-  const server = validatedArgs.server;
-
-  [
-    { prop: "URL", type: "string" },
-    { prop: "limit", type: "number" },
-    { prop: "mediaLocation", type: "string" },
-  ].forEach((propCheck) => {
-    if (!hasProp(server, propCheck.prop)) {
-      $logger.verbose(
-        `Missing "args.server.${propCheck.prop}", setting to default: "${
-          DEFAULT_SERVER_SETTINGS[propCheck.prop]
-        }"`
-      );
-      server[propCheck.prop] = DEFAULT_SERVER_SETTINGS[propCheck.prop];
-    } else if (typeof server[propCheck.prop] !== propCheck.type) {
-      return $throw(
-        `"args.server.${propCheck.prop}" is not a ${propCheck.type}, cannot run plugin"`
-      );
-    }
-  });
-
   if (!validatedArgs.studios || typeof validatedArgs.studios !== "object") {
-    $logger.verbose(`Missing "args.studios, setting to default: `, DEFAULT_STUDIO_SETTINGS);
+    $logger.verbose(
+      `Missing "args.studios, setting to default: `,
+      $formatMessage(DEFAULT_STUDIO_SETTINGS)
+    );
     validatedArgs.studios = DEFAULT_STUDIO_SETTINGS;
   } else {
     // Copy object
@@ -154,6 +127,11 @@ export const validateArgs = ({
     }
   });
 
+  const server = validateServerArgs(validatedArgs.server, $logger, $throw);
+  if (typeof server === "object") {
+    validatedArgs.server = server;
+  }
+
   // At the end of this function, validatedArgs will have type MyStudioArgs
   // since we merged defaults
   return validatedArgs as MyStudioArgs;
@@ -165,6 +143,7 @@ export const validateArgs = ({
  */
 export const validateActorArgs = ({
   args,
+  $formatMessage,
   $throw,
   $logger,
   actorName,
@@ -184,7 +163,10 @@ export const validateActorArgs = ({
   }
 
   if (!validatedArgs.actors || typeof validatedArgs.actors !== "object") {
-    $logger.verbose(`Missing "args.actors, setting to default: `, DEFAULT_ACTOR_SETTINGS);
+    $logger.verbose(
+      `Missing "args.actors, setting to default: `,
+      $formatMessage(DEFAULT_ACTOR_SETTINGS)
+    );
     validatedArgs.actors = DEFAULT_ACTOR_SETTINGS;
   } else {
     // Copy object
@@ -208,34 +190,10 @@ export const validateActorArgs = ({
     }
   });
 
-  if (!validatedArgs.server || typeof validatedArgs.server !== "object") {
-    $logger.verbose(`Missing "args.server, setting to default: `, DEFAULT_SERVER_SETTINGS);
-    validatedArgs.server = DEFAULT_SERVER_SETTINGS;
-  } else {
-    // Copy object
-    validatedArgs.server = { ...validatedArgs.server };
+  const server = validateServerArgs(validatedArgs.server, $logger, $throw);
+  if (typeof server === "object") {
+    validatedArgs.server = server;
   }
-
-  const server = validatedArgs.server;
-
-  [
-    { prop: "URL", type: "string" },
-    { prop: "limit", type: "number" },
-    { prop: "mediaLocation", type: "string" },
-  ].forEach((propCheck) => {
-    if (!hasProp(server, propCheck.prop)) {
-      $logger.verbose(
-        `Missing "args.server.${propCheck.prop}", setting to default: "${
-          DEFAULT_SERVER_SETTINGS[propCheck.prop]
-        }"`
-      );
-      server[propCheck.prop] = DEFAULT_SERVER_SETTINGS[propCheck.prop];
-    } else if (typeof server[propCheck.prop] !== propCheck.type) {
-      return $throw(
-        `"args.server.${propCheck.prop}" is not a ${propCheck.type}, cannot run plugin"`
-      );
-    }
-  });
 
   // At the end of this function, validatedArgs will have type MySceneArgs
   // since we merged defaults
@@ -248,6 +206,7 @@ export const validateActorArgs = ({
  */
 export const validateSceneArgs = ({
   args,
+  $formatMessage,
   $throw,
   $logger,
   scenePath,
@@ -272,7 +231,10 @@ export const validateSceneArgs = ({
   }
 
   if (!validatedArgs.scenes || typeof validatedArgs.scenes !== "object") {
-    $logger.verbose(`Missing "args.scenes, setting to default: `, DEFAULT_SCENE_SETTINGS);
+    $logger.verbose(
+      `Missing "args.scenes, setting to default: `,
+      $formatMessage(DEFAULT_SCENE_SETTINGS)
+    );
     validatedArgs.scenes = DEFAULT_SCENE_SETTINGS;
   } else {
     // Copy object
@@ -301,15 +263,31 @@ export const validateSceneArgs = ({
     }
   });
 
-  if (!validatedArgs.server || typeof validatedArgs.server !== "object") {
-    $logger.verbose(`Missing "args.server, setting to default: `, DEFAULT_SERVER_SETTINGS);
-    validatedArgs.server = DEFAULT_SERVER_SETTINGS;
-  } else {
-    // Copy object
-    validatedArgs.server = { ...validatedArgs.server };
+  const server = validateServerArgs(validatedArgs.server, $logger, $throw);
+  if (typeof server === "object") {
+    validatedArgs.server = server;
   }
 
-  const server = validatedArgs.server;
+  // At the end of this function, validatedArgs will have type MySceneArgs
+  // since we merged defaults
+  return validatedArgs as MySceneArgs;
+};
+
+const validateServerArgs = (
+  server: DeepPartial<ServerSettings>,
+  $logger,
+  $formatMessage
+): DeepPartial<ServerSettings> | void => {
+  if (!server || typeof server !== "object") {
+    $logger.verbose(
+      `Missing "args.server, setting to default: `,
+      $formatMessage(DEFAULT_SERVER_SETTINGS)
+    );
+    server = DEFAULT_SERVER_SETTINGS;
+  } else {
+    // Copy object
+    server = { ...server };
+  }
 
   [
     { prop: "URL", type: "string" },
@@ -330,9 +308,7 @@ export const validateSceneArgs = ({
     }
   });
 
-  // At the end of this function, validatedArgs will have type MySceneArgs
-  // since we merged defaults
-  return validatedArgs as MySceneArgs;
+  return server;
 };
 
 function lowercase(str: string): string {
@@ -455,10 +431,25 @@ export const suppressProp = (ctx: MyValidatedStudioContext, prop: string): boole
  * @param timestamp - Timestamp to be converted to date
  * @returns a human friendly date string in YYYY-MM-DD
  */
-export function timestampToString(timestamp: number | null) {
-  if (timestamp === null) return "";
+export function timestampToString(timestamp: number) {
+  const dateNotFormatted = new Date(timestamp);
 
-  return moment(timestamp).format("YYYY-MM-DD");
+  let formattedString = `${dateNotFormatted.getFullYear()}-`;
+
+  if (dateNotFormatted.getMonth() < 9) {
+    formattedString += "0";
+  }
+
+  formattedString += dateNotFormatted.getMonth() + 1;
+
+  formattedString += "-";
+
+  if (dateNotFormatted.getDate() < 10) {
+    formattedString += "0";
+  }
+  formattedString += dateNotFormatted.getDate();
+
+  return formattedString;
 }
 
 export const dateToTimestamp = (ctx: MyValidatedSceneContext, dateStr: string): number | null => {

@@ -1,14 +1,39 @@
 import {
+  ActorSettings,
   DeepPartial,
+  MyActorArgs,
+  MyActorContext,
+  MySceneArgs,
+  MySceneContext,
   MyStudioArgs,
   MyStudioContext,
-  MyValidatedStudioContext,
   MyValidatedSceneContext,
+  MyValidatedStudioContext,
+  SceneSettings,
+  ServerSettings,
   StudioSettings,
 } from "./types";
+import moment = require("moment");
 
 export const hasProp = (target: unknown, prop: string): boolean => {
   return !!target && typeof target === "object" && Object.hasOwnProperty.call(target, prop);
+};
+
+const DEFAULT_ACTOR_SETTINGS: ActorSettings = {
+  missingLabel: "",
+};
+
+const DEFAULT_SCENE_SETTINGS: SceneSettings = {
+  missingLabel: "",
+  matchActors: false,
+  matchStudio: false,
+  maxLevenshteinDistance: 10,
+};
+
+const DEFAULT_SERVER_SETTINGS: ServerSettings = {
+  URL: "https://traxxx.me",
+  limit: 100,
+  mediaLocation: "",
 };
 
 const DEFAULT_STUDIO_SETTINGS: StudioSettings = {
@@ -47,11 +72,37 @@ export const validateArgs = ({
     return $throw(`Missing args, cannot run plugin`);
   }
 
+  if (!validatedArgs.server || typeof validatedArgs.server !== "object") {
+    $logger.verbose(`Missing "args.server, setting to default: `, DEFAULT_SERVER_SETTINGS);
+    validatedArgs.server = DEFAULT_SERVER_SETTINGS;
+  } else {
+    // Copy object
+    validatedArgs.server = { ...validatedArgs.server };
+  }
+
+  const server = validatedArgs.server;
+
+  [
+    { prop: "URL", type: "string" },
+    { prop: "limit", type: "number" },
+    { prop: "mediaLocation", type: "string" },
+  ].forEach((propCheck) => {
+    if (!hasProp(server, propCheck.prop)) {
+      $logger.verbose(
+        `Missing "args.server.${propCheck.prop}", setting to default: "${
+          DEFAULT_SERVER_SETTINGS[propCheck.prop]
+        }"`
+      );
+      server[propCheck.prop] = DEFAULT_SERVER_SETTINGS[propCheck.prop];
+    } else if (typeof server[propCheck.prop] !== propCheck.type) {
+      return $throw(
+        `"args.server.${propCheck.prop}" is not a ${propCheck.type}, cannot run plugin"`
+      );
+    }
+  });
+
   if (!validatedArgs.studios || typeof validatedArgs.studios !== "object") {
-    $logger.verbose(
-      `Missing "args.studios.channelPriority, setting to default: `,
-      DEFAULT_STUDIO_SETTINGS
-    );
+    $logger.verbose(`Missing "args.studios, setting to default: `, DEFAULT_STUDIO_SETTINGS);
     validatedArgs.studios = DEFAULT_STUDIO_SETTINGS;
   } else {
     // Copy object
@@ -106,6 +157,182 @@ export const validateArgs = ({
   // At the end of this function, validatedArgs will have type MyStudioArgs
   // since we merged defaults
   return validatedArgs as MyStudioArgs;
+};
+
+/**
+ * @param ctx - plugin context
+ * @returns the context with defaults args when missing, or throws
+ */
+export const validateActorArgs = ({
+  args,
+  $throw,
+  $logger,
+  actorName,
+}: MyActorContext): MyActorArgs | void => {
+  let validatedArgs: DeepPartial<MyActorArgs> | undefined;
+  if (args && typeof args === "object") {
+    // Copy object
+    validatedArgs = { ...args };
+  }
+
+  if (!actorName || typeof actorName !== "string") {
+    return $throw(`Missing "actorName", cannot run plugin`);
+  }
+
+  if (!validatedArgs || typeof validatedArgs !== "object") {
+    return $throw(`Missing args, cannot run plugin`);
+  }
+
+  if (!validatedArgs.actors || typeof validatedArgs.actors !== "object") {
+    $logger.verbose(`Missing "args.actors, setting to default: `, DEFAULT_ACTOR_SETTINGS);
+    validatedArgs.actors = DEFAULT_ACTOR_SETTINGS;
+  } else {
+    // Copy object
+    validatedArgs.actors = { ...validatedArgs.actors };
+  }
+
+  const actors = validatedArgs.actors;
+
+  [{ prop: "missingLabel", type: "string" }].forEach((propCheck) => {
+    if (!hasProp(actors, propCheck.prop)) {
+      $logger.verbose(
+        `Missing "args.actors.${propCheck.prop}", setting to default: "${
+          DEFAULT_ACTOR_SETTINGS[propCheck.prop]
+        }"`
+      );
+      actors[propCheck.prop] = DEFAULT_ACTOR_SETTINGS[propCheck.prop];
+    } else if (typeof actors[propCheck.prop] !== propCheck.type) {
+      return $throw(
+        `"args.actors.${propCheck.prop}" is not a ${propCheck.type}, cannot run plugin"`
+      );
+    }
+  });
+
+  if (!validatedArgs.server || typeof validatedArgs.server !== "object") {
+    $logger.verbose(`Missing "args.server, setting to default: `, DEFAULT_SERVER_SETTINGS);
+    validatedArgs.server = DEFAULT_SERVER_SETTINGS;
+  } else {
+    // Copy object
+    validatedArgs.server = { ...validatedArgs.server };
+  }
+
+  const server = validatedArgs.server;
+
+  [
+    { prop: "URL", type: "string" },
+    { prop: "limit", type: "number" },
+    { prop: "mediaLocation", type: "string" },
+  ].forEach((propCheck) => {
+    if (!hasProp(server, propCheck.prop)) {
+      $logger.verbose(
+        `Missing "args.server.${propCheck.prop}", setting to default: "${
+          DEFAULT_SERVER_SETTINGS[propCheck.prop]
+        }"`
+      );
+      server[propCheck.prop] = DEFAULT_SERVER_SETTINGS[propCheck.prop];
+    } else if (typeof server[propCheck.prop] !== propCheck.type) {
+      return $throw(
+        `"args.server.${propCheck.prop}" is not a ${propCheck.type}, cannot run plugin"`
+      );
+    }
+  });
+
+  // At the end of this function, validatedArgs will have type MySceneArgs
+  // since we merged defaults
+  return validatedArgs as MyActorArgs;
+};
+
+/**
+ * @param ctx - plugin context
+ * @returns the context with defaults args when missing, or throws
+ */
+export const validateSceneArgs = ({
+  args,
+  $throw,
+  $logger,
+  scenePath,
+  sceneName,
+}: MySceneContext): MySceneArgs | void => {
+  let validatedArgs: DeepPartial<MySceneArgs> | undefined;
+  if (args && typeof args === "object") {
+    // Copy object
+    validatedArgs = { ...args };
+  }
+
+  if (!scenePath || typeof scenePath !== "string") {
+    return $throw(`Missing "scenePath", cannot run plugin`);
+  }
+
+  if (!sceneName || typeof sceneName !== "string") {
+    return $throw(`Missing "sceneName", cannot run plugin`);
+  }
+
+  if (!validatedArgs || typeof validatedArgs !== "object") {
+    return $throw(`Missing args, cannot run plugin`);
+  }
+
+  if (!validatedArgs.scenes || typeof validatedArgs.scenes !== "object") {
+    $logger.verbose(`Missing "args.scenes, setting to default: `, DEFAULT_SCENE_SETTINGS);
+    validatedArgs.scenes = DEFAULT_SCENE_SETTINGS;
+  } else {
+    // Copy object
+    validatedArgs.scenes = { ...validatedArgs.scenes };
+  }
+
+  const scenes = validatedArgs.scenes;
+
+  [
+    { prop: "missingLabel", type: "string" },
+    { prop: "matchStudio", type: "boolean" },
+    { prop: "matchActors", type: "boolean" },
+    { prop: "maxLevenshteinDistance", type: "number" },
+  ].forEach((propCheck) => {
+    if (!hasProp(scenes, propCheck.prop)) {
+      $logger.verbose(
+        `Missing "args.scenes.${propCheck.prop}", setting to default: "${
+          DEFAULT_SCENE_SETTINGS[propCheck.prop]
+        }"`
+      );
+      scenes[propCheck.prop] = DEFAULT_SCENE_SETTINGS[propCheck.prop];
+    } else if (typeof scenes[propCheck.prop] !== propCheck.type) {
+      return $throw(
+        `"args.scenes.${propCheck.prop}" is not a ${propCheck.type}, cannot run plugin"`
+      );
+    }
+  });
+
+  if (!validatedArgs.server || typeof validatedArgs.server !== "object") {
+    $logger.verbose(`Missing "args.server, setting to default: `, DEFAULT_SERVER_SETTINGS);
+    validatedArgs.server = DEFAULT_SERVER_SETTINGS;
+  } else {
+    // Copy object
+    validatedArgs.server = { ...validatedArgs.server };
+  }
+
+  const server = validatedArgs.server;
+
+  [
+    { prop: "URL", type: "string" },
+    { prop: "limit", type: "number" },
+    { prop: "mediaLocation", type: "string" },
+  ].forEach((propCheck) => {
+    if (!hasProp(server, propCheck.prop)) {
+      $logger.verbose(
+        `Missing "args.server.${propCheck.prop}", setting to default: "${
+          DEFAULT_SERVER_SETTINGS[propCheck.prop]
+        }"`
+      );
+      server[propCheck.prop] = DEFAULT_SERVER_SETTINGS[propCheck.prop];
+    } else if (typeof server[propCheck.prop] !== propCheck.type) {
+      return $throw(
+        `"args.server.${propCheck.prop}" is not a ${propCheck.type}, cannot run plugin"`
+      );
+    }
+  });
+
+  // At the end of this function, validatedArgs will have type MySceneArgs
+  // since we merged defaults
+  return validatedArgs as MySceneArgs;
 };
 
 function lowercase(str: string): string {
@@ -231,24 +458,7 @@ export const suppressProp = (ctx: MyValidatedStudioContext, prop: string): boole
 export function timestampToString(timestamp: number | null) {
   if (timestamp === null) return "";
 
-  const dateNotFormatted = new Date(timestamp);
-
-  let formattedString = `${dateNotFormatted.getFullYear()}-`;
-
-  if (dateNotFormatted.getMonth() < 9) {
-    formattedString += "0";
-  }
-
-  formattedString += dateNotFormatted.getMonth() + 1;
-
-  formattedString += "-";
-
-  if (dateNotFormatted.getDate() < 10) {
-    formattedString += "0";
-  }
-  formattedString += dateNotFormatted.getDate();
-
-  return formattedString;
+  return moment(timestamp).format("YYYY-MM-DD");
 }
 
 export const dateToTimestamp = (ctx: MyValidatedSceneContext, dateStr: string): number | null => {

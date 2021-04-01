@@ -17,34 +17,34 @@ export interface SceneSettings {
   /**
    * Label added if the scene is not found on Traxxx
    */
-  missingLabel?: string;
+  missingLabel: string;
   /**
    * The current studio must match the studio returned from traxxx. Only works when another plugin resolves the studio.
    */
-  matchStudio?: boolean;
+  matchStudio: boolean;
   /**
    * The current actors must be returned from traxx. Only works when another plugin resolves the studio.
    */
-  matchActors?: boolean;
+  matchActors: boolean;
   /**
    * The maximum diference between the result and the original value.
    */
-  maxLevenshteinDistance?: number;
+  maxLevenshteinDistance: number;
 }
 
 export interface ServerSettings {
   /**
    * Override the default URL for use with local instance of traxxx, Default is http://traxx.me.
    */
-  URL?: string;
+  URL: string;
   /**
    * Limit the number of results returned from the api. Default is 100
    */
-  limit?: number;
+  limit: number;
   /**
    * The local folder that traxx stores the media.
    */
-  mediaLocation?: string;
+  mediaLocation: string;
 }
 
 export interface StudioSettings {
@@ -92,8 +92,6 @@ export interface StudioSettings {
    * already returned those properties
    */
   blacklistOverride: string[];
-
-  mediaLocation?: string;
 }
 
 export interface MyActorArgs {

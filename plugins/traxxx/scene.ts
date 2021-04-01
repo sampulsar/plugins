@@ -1,7 +1,7 @@
 import { SceneOutput } from "../../types/scene";
 import { Api, SceneResult } from "./api";
 import { MySceneContext, MyValidatedSceneContext } from "./types";
-import { dateToTimestamp, timestampToString, slugify } from "./util";
+import { dateToTimestamp, timestampToString, slugify, validateSceneArgs } from "./util";
 import levenshtein from "./levenshtein";
 
 enum ThreeState {
@@ -100,11 +100,11 @@ export class SceneExtractor {
 
     let thumbnail = "";
     const name = this.getName().name as string;
-    const mediaLocation = this.ctx.args?.server?.mediaLocation;
+    const mediaLocation = this.ctx.args?.server.mediaLocation;
     if (mediaLocation) {
       thumbnail = this.ctx.args.dry
         ? `_would_have_created_${poster}`
-        : await this.ctx.$createLocalImage(mediaLocation + poster, name, true);
+        : await this.ctx.$createLocalImage(`${mediaLocation}${poster}`, name, true);
     } else {
       thumbnail = this.ctx.args.dry
         ? `_would_have_created_${poster}`
@@ -125,7 +125,17 @@ export class SceneExtractor {
 }
 
 export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
-  const { $logger, $formatMessage, scenePath, sceneName, scene, data } = initialContext;
+  const { $logger, $formatMessage, $throw, scenePath, sceneName, scene, data } = initialContext;
+
+  try {
+    const validatedArgs = validateSceneArgs(initialContext);
+    if (validatedArgs) {
+      initialContext.args = validatedArgs;
+    }
+  } catch (err) {
+    $throw(err);
+    return {};
+  }
 
   // Scene Output from other plugins
   const passThroughSceneInfo = data as SceneOutput;
@@ -149,11 +159,11 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
   // Studio from other plugins will be a usable text value
   if (passThroughSceneInfo.studio) {
     const slugifiedStudio = slugify(passThroughSceneInfo.studio);
-    const { channel } = await api.getAllEntities(slugifiedStudio);
+    const channel = await api.getChannel(slugifiedStudio);
 
-    if (channel?.name) {
-      queries.push(channel.name);
-      notFoundResult.studio = channel.name;
+    if (channel?.data?.entity?.name) {
+      queries.push(channel.data.entity.name);
+      notFoundResult.studio = channel.data.entity.name;
     } else {
       queries.push(slugifiedStudio);
     }
@@ -196,6 +206,10 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
 
   if (!scenes || scenes.length === 0) {
     $logger.info(`Could not find scene "${sceneName}" in TRAXXX`);
+    if (args.dry) {
+      $logger.info(`Is 'dry' mode, would've returned: ${$formatMessage(notFoundResult)}`);
+      return {};
+    }
     return notFoundResult;
   }
 
@@ -278,9 +292,14 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
       }
     }
   });
-  const maxLevenshteinDistance = args.scenes?.maxLevenshteinDistance || 10;
-  if (!sceneId || sceneHighScore > maxLevenshteinDistance) return notFoundResult;
-
+  const maxLevenshteinDistance = args.scenes.maxLevenshteinDistance;
+  if (!sceneId || sceneHighScore > maxLevenshteinDistance) {
+    if (args.dry) {
+      $logger.info(`Is 'dry' mode, would've returned: ${$formatMessage(notFoundResult)}`);
+      return {};
+    }
+    return notFoundResult;
+  }
   $logger.info(`traxxScene: ${$formatMessage(sceneId)}`);
 
   const traxxScene = (await api.getScene(sceneId)).data.scene;

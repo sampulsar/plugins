@@ -1,7 +1,7 @@
 import { ActorOutput } from "../../types/actor";
 import { Api, ActorResult } from "./api";
 import { MyActorContext, MyValidatedActorContext } from "./types";
-import { slugify } from "./util";
+import { slugify, validateActorArgs } from "./util";
 
 export class ActorExtractor {
   ctx: MyValidatedActorContext;
@@ -119,7 +119,17 @@ export class ActorExtractor {
 }
 
 export default async (initialContext: MyActorContext): Promise<ActorOutput> => {
-  const { $logger, $formatMessage, actorName } = initialContext;
+  const { $logger, $formatMessage, $throw, actorName } = initialContext;
+
+  try {
+    const validatedArgs = validateActorArgs(initialContext);
+    if (validatedArgs) {
+      initialContext.args = validatedArgs;
+    }
+  } catch (err) {
+    $throw(err);
+    return {};
+  }
   const notFoundResult: ActorOutput = {};
 
   // Can assert all properties exist, since we just validated them above

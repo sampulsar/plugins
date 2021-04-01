@@ -107,8 +107,8 @@ export class Api {
   constructor(ctx: Context) {
     this.ctx = ctx;
     const args = ctx.args as MyActorArgs | MySceneArgs | MyStudioArgs;
-    this.apiURL = args?.server?.URL || "https://traxxx.me";
-    this.limit = args?.server?.limit || 100;
+    this.apiURL = args.server.URL;
+    this.limit = args.server.limit;
 
     this.axios = ctx.$axios.create({
       baseURL: `${this.apiURL}/api`,

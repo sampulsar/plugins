@@ -128,7 +128,7 @@ export const validateStudioArgs = ({
     }
   });
 
-  const server = validateServerArgs(validatedArgs.server, $throw, $logger, $throw);
+  const server = validateServerArgs(validatedArgs.server, $throw, $logger, $formatMessage);
   if (typeof server === "object") {
     validatedArgs.server = server;
   }
@@ -191,7 +191,7 @@ export const validateActorArgs = ({
     }
   });
 
-  const server = validateServerArgs(validatedArgs.server, $throw, $logger, $throw);
+  const server = validateServerArgs(validatedArgs.server, $throw, $logger, $formatMessage);
   if (typeof server === "object") {
     validatedArgs.server = server;
   }
@@ -264,7 +264,7 @@ export const validateSceneArgs = ({
     }
   });
 
-  const server = validateServerArgs(validatedArgs.server, $throw, $logger, $throw);
+  const server = validateServerArgs(validatedArgs.server, $throw, $logger, $formatMessage);
   if (typeof server === "object") {
     validatedArgs.server = server;
   }

@@ -4,10 +4,10 @@ import { MySceneContext, MyValidatedSceneContext } from "./types";
 import { dateToTimestamp, timestampToString, slugify, validateSceneArgs } from "./util";
 import levenshtein from "./levenshtein";
 
-enum ThreeState {
-  TRUE,
-  FALSE,
-  TRALSE,
+enum MatchResult {
+  OK,
+  NOK,
+  DISABLED,
 }
 
 export class SceneExtractor {
@@ -93,7 +93,7 @@ export class SceneExtractor {
   }
 
   async getThumbnail(): Promise<Partial<{ thumbnail: string }>> {
-    const poster = this.scene?.poster.path;
+    const poster = this.scene?.poster?.path;
     if (!poster) {
       return {};
     }
@@ -180,7 +180,7 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
     return {};
   }
 
-  // User releaseDate from other plugins
+  // Use releaseDate from other plugins
   if (passThroughSceneInfo?.releaseDate) scene.releaseDate = passThroughSceneInfo.releaseDate;
 
   if (!scene.releaseDate || Number.isNaN(scene.releaseDate)) {
@@ -219,24 +219,24 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
   scenes.forEach((result) => {
     if (!result) return;
 
-    let matchstudio = ThreeState.TRUE;
+    let matchstudio = MatchResult.OK;
     // The studio needs to match what is passed.
     if (args.scenes?.matchStudio) {
       if (passThroughSceneInfo.studio) {
         matchstudio =
           slugify(result.entity.name) === slugify(passThroughSceneInfo.studio)
-            ? ThreeState.TRUE
-            : ThreeState.FALSE;
+            ? MatchResult.OK
+            : MatchResult.DISABLED;
         $logger.debug(
           `Match Studio "${result?.entity?.name}" with "${passThroughSceneInfo.studio}"`
         );
       } else {
         // Nothing to validate
-        matchstudio = ThreeState.TRALSE;
+        matchstudio = MatchResult.NOK;
       }
     }
 
-    let matchactors = ThreeState.TRUE; // If match enable and no passThroughSceneInfo.actors it will be null.
+    let matchactors = MatchResult.OK; // If match enable and no passThroughSceneInfo.actors it will be null.
     if (args.scenes?.matchActors) {
       if (passThroughSceneInfo.actors) {
         const actorsArray = passThroughSceneInfo.actors;
@@ -245,16 +245,16 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
           return actor.name || "";
         });
 
-        $logger.info(
+        $logger.debug(
           `Testing "${$formatMessage(actorsArray)}" with "${$formatMessage(resultActors)}"`
         );
         actorsArray.forEach((actorName) => {
           if (!resultActors.includes(actorName)) {
-            matchactors = ThreeState.FALSE;
+            matchactors = MatchResult.DISABLED;
           }
         });
       } else {
-        matchactors = ThreeState.TRALSE;
+        matchactors = MatchResult.NOK;
       }
     }
 
@@ -271,8 +271,8 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
 
     if (
       found < sceneHighScore &&
-      matchstudio !== ThreeState.FALSE &&
-      (matchactors === ThreeState.TRALSE || matchactors === ThreeState.TRUE)
+      matchstudio !== MatchResult.DISABLED &&
+      (matchactors === MatchResult.NOK || matchactors === MatchResult.OK)
     ) {
       sceneHighScore = found;
       sceneId = result.id;
@@ -283,8 +283,8 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
       $logger.info(`matchstudio "${matchstudio}"`);
       $logger.info(`matchactors "${matchactors}"`);
       if (
-        matchstudio !== ThreeState.FALSE &&
-        (matchactors === ThreeState.TRALSE || matchactors === ThreeState.TRUE)
+        matchstudio !== MatchResult.DISABLED &&
+        (matchactors === MatchResult.NOK || matchactors === MatchResult.OK)
       ) {
         sceneHighScore = 0;
         sceneId = result.id;

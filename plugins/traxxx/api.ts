@@ -216,7 +216,7 @@ export const buildImageUrls = (
   thumbnail: string | undefined;
   favicon: string | undefined;
 } => {
-  const baseUrl = `${args?.server?.URL || "https://traxxx.me"}/img/logos/`;
+  const baseUrl = `${args.server.URL}/img/logos/`;
 
   return {
     logo: entity.logo ? `${baseUrl}${entity.logo}` : undefined,

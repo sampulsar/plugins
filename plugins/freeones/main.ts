@@ -95,7 +95,7 @@ module.exports = async (ctx: MyContext): Promise<ActorOutput> => {
     $throw("Uh oh. You shouldn't use the plugin for this type of event");
   }
 
-  $logger.info(`Scraping freeones date for ${actorName}, dry mode: ${args.dry || false}...`);
+  $logger.info(`Scraping freeones for ${actorName}, dry mode: ${args.dry || false}...`);
 
   const blacklist = (args.blacklist || []).map(lowercase);
   if (!args.blacklist) {

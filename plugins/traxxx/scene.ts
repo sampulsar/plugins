@@ -138,7 +138,7 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
   }
 
   // Scene Output from other plugins
-  const passThroughSceneInfo = data as SceneOutput;
+  const passThroughSceneInfo = data;
   const notFoundResult: SceneOutput = {};
 
   // Can assert all properties exist, since we just validated them above
@@ -260,7 +260,6 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
 
     const resultDate = result?.date.split("T")[0];
     const date = timestampToString(scene.releaseDate);
-    $logger.debug(`Testing "${date}" with "${resultDate}"`);
 
     // Test the title
     const resultName = slugify(result.title, true);
@@ -278,17 +277,18 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
       sceneId = result.id;
     }
 
+    $logger.debug(`Testing "${date}" with "${resultDate}"`);
     if (date === resultDate) {
-      $logger.info(`Date match "${name}" with "${resultName}"`);
-      $logger.info(`matchstudio "${matchstudio}"`);
-      $logger.info(`matchactors "${matchactors}"`);
+      $logger.debug(`Date match "${name}" with "${resultName}"`);
+      $logger.debug(`matchstudio "${matchstudio}"`);
+      $logger.debug(`matchactors "${matchactors}"`);
       if (
         matchstudio !== MatchResult.DISABLED &&
         (matchactors === MatchResult.NOK || matchactors === MatchResult.OK)
       ) {
         sceneHighScore = 0;
         sceneId = result.id;
-        $logger.info(`Date match "${name}" with "${resultName}"`);
+        $logger.debug(`Date match "${name}" with "${resultName}"`);
       }
     }
   });
@@ -300,7 +300,7 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
     }
     return notFoundResult;
   }
-  $logger.info(`traxxScene: ${$formatMessage(sceneId)}`);
+  $logger.debug(`traxxScene: ${$formatMessage(sceneId)}`);
 
   const traxxScene = (await api.getScene(sceneId)).data.scene;
 

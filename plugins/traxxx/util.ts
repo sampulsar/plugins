@@ -275,21 +275,23 @@ export const validateSceneArgs = ({
 };
 
 const validateServerArgs = (
-  server: DeepPartial<ServerSettings>,
+  serverSettings: DeepPartial<ServerSettings> | undefined,
   $throw,
   $logger,
   $formatMessage
 ): DeepPartial<ServerSettings> | void => {
-  if (!server || typeof server !== "object") {
+  if (!serverSettings || typeof serverSettings !== "object") {
     $logger.verbose(
       `Missing "args.server, setting to default: `,
       $formatMessage(DEFAULT_SERVER_SETTINGS)
     );
-    server = DEFAULT_SERVER_SETTINGS;
+    serverSettings = DEFAULT_SERVER_SETTINGS;
   } else {
     // Copy object
-    server = { ...server };
+    serverSettings = { ...serverSettings };
   }
+
+  const server = serverSettings;
 
   [
     { prop: "URL", type: "string" },
@@ -433,7 +435,9 @@ export const suppressProp = (ctx: MyValidatedStudioContext, prop: string): boole
  * @param timestamp - Timestamp to be converted to date
  * @returns a human friendly date string in YYYY-MM-DD
  */
-export function timestampToString(timestamp: number) {
+export function timestampToString(timestamp: number | null) {
+  if (timestamp === null) return "";
+
   const dateNotFormatted = new Date(timestamp);
 
   let formattedString = `${dateNotFormatted.getFullYear()}-`;

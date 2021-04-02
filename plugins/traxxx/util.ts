@@ -53,6 +53,7 @@ const DEFAULT_STUDIO_SETTINGS: StudioSettings = {
  */
 export const validateStudioArgs = ({
   args,
+  $formatMessage,
   $throw,
   $logger,
   studioName,
@@ -127,7 +128,7 @@ export const validateStudioArgs = ({
     }
   });
 
-  const server = validateServerArgs(validatedArgs.server, $logger, $throw);
+  const server = validateServerArgs(validatedArgs.server, $throw, $logger, $throw);
   if (typeof server === "object") {
     validatedArgs.server = server;
   }
@@ -190,7 +191,7 @@ export const validateActorArgs = ({
     }
   });
 
-  const server = validateServerArgs(validatedArgs.server, $logger, $throw);
+  const server = validateServerArgs(validatedArgs.server, $throw, $logger, $throw);
   if (typeof server === "object") {
     validatedArgs.server = server;
   }
@@ -263,7 +264,7 @@ export const validateSceneArgs = ({
     }
   });
 
-  const server = validateServerArgs(validatedArgs.server, $logger, $throw);
+  const server = validateServerArgs(validatedArgs.server, $throw, $logger, $throw);
   if (typeof server === "object") {
     validatedArgs.server = server;
   }
@@ -275,6 +276,7 @@ export const validateSceneArgs = ({
 
 const validateServerArgs = (
   server: DeepPartial<ServerSettings>,
+  $throw,
   $logger,
   $formatMessage
 ): DeepPartial<ServerSettings> | void => {

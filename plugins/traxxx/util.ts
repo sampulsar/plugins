@@ -438,24 +438,15 @@ export const suppressProp = (ctx: MyValidatedStudioContext, prop: string): boole
 export function timestampToString(timestamp: number | null) {
   if (timestamp === null) return "";
 
-  const dateNotFormatted = new Date(timestamp);
+  const d = new Date(timestamp);
+  let month = `${d.getMonth() + 1}`;
+  let day = `${d.getDate()}`;
+  const year = `${d.getFullYear()}`;
 
-  let formattedString = `${dateNotFormatted.getFullYear()}-`;
+  if (month.length < 2) month = `0${month}`;
+  if (day.length < 2) day = `0${day}`;
 
-  if (dateNotFormatted.getMonth() < 9) {
-    formattedString += "0";
-  }
-
-  formattedString += dateNotFormatted.getMonth() + 1;
-
-  formattedString += "-";
-
-  if (dateNotFormatted.getDate() < 10) {
-    formattedString += "0";
-  }
-  formattedString += dateNotFormatted.getDate();
-
-  return formattedString;
+  return [year, month, day].join("-");
 }
 
 export const dateToTimestamp = (ctx: MyValidatedSceneContext, dateStr: string): number | null => {

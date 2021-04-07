@@ -439,12 +439,9 @@ export function timestampToString(timestamp: number | null) {
   if (timestamp === null) return "";
 
   const d = new Date(timestamp);
-  let month = `${d.getMonth() + 1}`;
-  let day = `${d.getDate()}`;
+  const month = `${d.getMonth() + 1}`.padStart(2, "0");
+  const day = `${d.getDate()}`.padStart(2, "0");
   const year = `${d.getFullYear()}`;
-
-  if (month.length < 2) month = `0${month}`;
-  if (day.length < 2) day = `0${day}`;
 
   return [year, month, day].join("-");
 }

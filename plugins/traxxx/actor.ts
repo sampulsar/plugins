@@ -114,6 +114,7 @@ export class ActorExtractor {
       tattoos: actor?.tattoos,
       piercings: actor?.piercings,
       ethnicity: actor?.ethnicity,
+      traxxx: `${this.api.apiURL}/actor/${actor?.id}/${actor?.slug}/`,
     };
   }
 }

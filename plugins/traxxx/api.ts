@@ -31,6 +31,7 @@ export namespace ActorResult {
   export interface Actor {
     id: number;
     name: string;
+    slug: string;
     gender?: string;
     aliasFor?: string;
     dateOfBirth?: string;

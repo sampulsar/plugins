@@ -120,6 +120,7 @@ export class SceneExtractor {
     const scene = this.scene;
     return {
       ...scene,
+      traxxx: `${this.api.apiURL}/scene/${scene?.id}/`,
     };
   }
 }
@@ -223,10 +224,16 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
     // The studio needs to match what is passed.
     if (args.scenes?.matchStudio) {
       if (passThroughSceneInfo.studio) {
-        matchstudio =
-          slugify(result.entity.name) === slugify(passThroughSceneInfo.studio)
-            ? MatchResult.OK
-            : MatchResult.DISABLED;
+        if (
+          slugify(result.entity.name.toLowerCase()) ===
+          slugify(passThroughSceneInfo.studio.toLowerCase())
+        ) {
+          notFoundResult.studio = result.entity.name;
+          matchstudio = MatchResult.OK;
+        } else {
+          matchstudio = MatchResult.DISABLED;
+        }
+
         $logger.debug(
           `Match Studio "${result?.entity?.name}" with "${passThroughSceneInfo.studio}"`
         );
@@ -242,14 +249,14 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
         const actorsArray = passThroughSceneInfo.actors;
 
         const resultActors = result.actors.map((actor) => {
-          return actor.name || "";
+          return actor.name.toLowerCase() || "";
         });
 
         $logger.debug(
           `Testing "${$formatMessage(actorsArray)}" with "${$formatMessage(resultActors)}"`
         );
         actorsArray.forEach((actorName) => {
-          if (!resultActors.includes(actorName)) {
+          if (!resultActors.includes(actorName.toLowerCase())) {
             matchactors = MatchResult.DISABLED;
           }
         });

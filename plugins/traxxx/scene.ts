@@ -116,7 +116,7 @@ export class SceneExtractor {
     };
   }
 
-  getCustom(): Partial<SceneResult.Scene> {
+  getCustom(): Partial<SceneResult.Scene & { traxxx: string }> {
     const scene = this.scene;
     return {
       ...scene,
@@ -171,7 +171,7 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
   }
 
   // Use the scene name from other plugins as it may be clean and formated
-  if (passThroughSceneInfo.name) scene.name = passThroughSceneInfo.name;
+  if ("name" in passThroughSceneInfo) scene.name = passThroughSceneInfo.name;
   queries.push(scene.name);
 
   // Check that we actually have something to search with.
@@ -194,7 +194,7 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
 
   const initialQuery = queries.flat().filter(Boolean).join(" ");
 
-  $logger.info(initialQuery);
+  $logger.debug(initialQuery);
   const searchPromise = api
     .getScenes(initialQuery)
     .then((res) => res?.data?.scenes)
@@ -216,7 +216,7 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
 
   let sceneHighScore = 5000;
   let sceneId;
-  $logger.info(`Found ${scenes.length} scenes "${initialQuery}" in TRAXXX`);
+  $logger.debug(`Found ${scenes.length} scenes "${initialQuery}" in TRAXXX`);
   scenes.forEach((result) => {
     if (!result) return;
 
@@ -230,6 +230,9 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
         ) {
           notFoundResult.studio = result.entity.name;
           matchstudio = MatchResult.OK;
+          $logger.debug(
+            `Matched Studio "${result?.entity?.name}" with "${passThroughSceneInfo.studio}"`
+          );
         } else {
           matchstudio = MatchResult.DISABLED;
         }
@@ -265,14 +268,14 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
       }
     }
 
-    const resultDate = result?.date.split("T")[0];
+    const resultDate = result?.date ? result?.date.split("T")[0] : "";
     const date = timestampToString(scene.releaseDate);
 
     // Test the title
     const resultName = slugify(result.title, true);
     const name = slugify(scene.name, true);
 
-    const found = levenshtein(name, resultName) as number;
+    const found = name === "" ? 0 : (levenshtein(name, resultName) as number);
     $logger.debug(`Testing "${name}" with "${resultName}" ${found}`);
 
     if (
@@ -282,10 +285,11 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
     ) {
       sceneHighScore = found;
       sceneId = result.id;
+      $logger.debug(`matched "${name}" with "${resultName}" ${found}`);
     }
 
     $logger.debug(`Testing "${date}" with "${resultDate}"`);
-    if (date === resultDate) {
+    if (resultDate && date === resultDate) {
       $logger.debug(`Date match "${name}" with "${resultName}"`);
       $logger.debug(`matchstudio "${matchstudio}"`);
       $logger.debug(`matchactors "${matchactors}"`);
@@ -333,6 +337,8 @@ export default async (initialContext: MySceneContext): Promise<SceneOutput> => {
     $logger.info(`Is 'dry' mode, would've returned: ${$formatMessage(result)}`);
     return {};
   }
+
+  $logger.info("Successfully matched scene:");
 
   return result;
 };

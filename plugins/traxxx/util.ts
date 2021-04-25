@@ -223,7 +223,7 @@ export const validateSceneArgs = ({
     return $throw(`Missing "scenePath", cannot run plugin`);
   }
 
-  if (!sceneName || typeof sceneName !== "string") {
+  if (typeof sceneName !== "string") {
     return $throw(`Missing "sceneName", cannot run plugin`);
   }
 

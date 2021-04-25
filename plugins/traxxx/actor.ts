@@ -188,7 +188,7 @@ export default async (initialContext: MyActorContext): Promise<ActorOutput> => {
     return {};
   }
 
-  $logger.info(`Returned: ${$formatMessage(result)}`);
+  $logger.debug(`Returned: ${$formatMessage(result)}`);
 
   return result;
 };
